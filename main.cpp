@@ -1,63 +1,62 @@
 #include <string> 
-#include <vector>   
+#include <vector>  
 #include <fstream>  
-#include <cctype>
+#include <cctype>       
 
 using namespace std;
 
-int main()
-{
-    vector<string> text;
-    vector<int> jumlah;
+int main(){
+    vector<string> teks;
 
     ifstream masukan("input.txt");
-    ofstream keluaran("output.json");
     
-    while(masukan.good())
-    {
-        string temp;
-        bool TF = true;
+    while(masukan.good()){
+        string st;
+        masukan >> st;
 
-        masukan >> temp;
+        for(int i=0; i<st.size(); ++i){
+            char& ch = st[i];
 
-        for(auto &i : temp) i = tolower(i);
+            if(ch == '-' || ch == '_'){
+                string sb(st,0,i);
+                if(sb != "") teks.push_back(sb);
+                st.erase(0,i+1);
+                i=-1; continue;
+            }
 
-        for(int i=0; i<temp.size(); ++i)
-        {
-            char ch = temp[i];
-            if(!(((ch>=97) && (ch<=122)) || ((ch>=65) && (ch<=90)))) 
-            {
-                temp.erase(temp.begin() + i);
+            if(!isalpha(ch) && !isdigit(ch)){
+                st.erase(st.begin() + i);
+                i--;
+            }
+	        else if(isalpha(ch) && ch <= 90) ch = tolower(ch); 
+        }
+
+        if(st != "") teks.push_back(st);
+    }
+    masukan.close();
+
+    ofstream keluaran("output.json");
+
+    keluaran << "{\n";
+    while(teks.size()){
+        string _st = teks[0];
+
+        int jumlah = 0;
+
+        keluaran << "\"" << teks[0] << "\": ";
+
+        for(int i=0; i<teks.size(); i++){
+            if(_st == teks[i]){
+                jumlah++;
+                teks.erase(teks.begin()+i);
                 i--;
             }
         }
-        
-        for(int i=0; i<text.size(); i++)
-            if(text[i] == temp)
-            {
-                jumlah[i]++;
-                TF = false;
-                break;                
-            }
-        
-        if(TF)
-        {
-            text.push_back(temp);
-            jumlah.push_back(1);
-        }
-    }
+        keluaran << jumlah;
 
-    keluaran << "{\n";
-    
-    for(int i=0; i<text.size(); i++)
-    {   
-        keluaran << "\"" << text[i] << "\"" << ": " << jumlah[i];
-
-        if(i != text.size()-1) keluaran << ",";
-
+        if(teks.size() != 0) keluaran << ",";
         keluaran << "\n";
-    }
-
+    }   
     keluaran << "}";
 
     keluaran.close();
